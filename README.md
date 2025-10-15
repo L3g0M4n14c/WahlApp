@@ -23,6 +23,19 @@ WahlApp ist eine plattformübergreifende Flutter-Anwendung zur Verwaltung von W�
 
 ## Installation
 
+### 🪟 Windows (Fertige App)
+
+**Für Windows-Nutzer gibt es eine fertige ausführbare App!**
+
+1. Gehe zu den [Releases](https://github.com/L3g0M4n14c/WahlApp/releases)
+2. Lade die neueste `WahlApp-Windows.zip` herunter
+3. Entpacke die ZIP-Datei
+4. Starte `wahlapp.exe`
+
+➡️ Siehe [WINDOWS_INSTALLATION.md](WINDOWS_INSTALLATION.md) für Details
+
+### 🛠️ Entwickler-Installation (alle Plattformen)
+
 1. Repository klonen:
 ```bash
 git clone https://github.com/L3g0M4n14c/WahlApp.git
