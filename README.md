@@ -11,6 +11,7 @@ WahlApp ist eine plattformübergreifende Flutter-Anwendung zur Verwaltung von W�
 - ✅ Abhaken von Wählern, die bereits gewählt haben
 - ✅ Suchfunktion nach PK-Nummer, Nachname oder Vorname
 - ✅ Statistik-Übersicht (Gesamt, Gewählt, Ausstehend)
+- ✅ **CSV-Import**: Massenimport von Wählerdaten aus CSV-Dateien
 - ✅ Lokale Datenspeicherung mit SQLite
 - ✅ Plattformübergreifend (Android, iOS, Web, Desktop)
 
@@ -58,6 +59,20 @@ flutter run
 2. Wählen Sie "Löschen"
 3. Bestätigen Sie die Löschung
 
+### CSV-Import von Wählerdaten
+1. Klicken Sie auf das Upload-Symbol (↑) in der App-Leiste
+2. Wählen Sie Ihre CSV-Datei aus
+3. Warten Sie auf die Importbestätigung
+
+**CSV-Format:**
+```csv
+PK-Nummer,Nachname,Vorname
+12345,Müller,Hans
+23456,Schmidt,Anna
+```
+
+Weitere Details finden Sie in der [CSV-Import Anleitung](CSV_IMPORT_GUIDE.md).
+
 ## Datenspeicherung
 
 Die App verwendet SQLite für die lokale Datenspeicherung. Die Datenbank wird automatisch beim ersten Start der App erstellt.
@@ -69,13 +84,14 @@ Die App verwendet SQLite für die lokale Datenspeicherung. Die Datenbank wird au
 ```
 lib/
   ├── models/
-  │   └── voter.dart           # Datenmodell für Wähler
+  │   └── voter.dart             # Datenmodell für Wähler
   ├── services/
-  │   ├── database_service.dart # SQLite Datenbankdienst
-  │   └── voter_provider.dart   # State Management mit Provider
+  │   ├── database_service.dart  # SQLite Datenbankdienst
+  │   ├── voter_provider.dart    # State Management mit Provider
+  │   └── csv_import_service.dart # CSV-Import-Funktionalität
   ├── screens/
   │   └── voter_list_screen.dart # Hauptbildschirm mit Wählerliste
-  └── main.dart                 # App-Einstiegspunkt
+  └── main.dart                  # App-Einstiegspunkt
 ```
 
 ## Technologien
@@ -83,6 +99,8 @@ lib/
 - **Flutter**: UI-Framework
 - **Provider**: State Management
 - **SQLite**: Lokale Datenbank
+- **CSV**: CSV-Datei-Import
+- **File Picker**: Dateiauswahl-Dialog
 - **Material Design 3**: UI-Komponenten
 
 ## Lizenz

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/voter_provider.dart';
+import '../services/csv_import_service.dart';
 import '../models/voter.dart';
 
 class VoterListScreen extends StatefulWidget {
@@ -114,12 +115,162 @@ class _VoterListScreenState extends State<VoterListScreen> {
     );
   }
 
+  Future<void> _importCsvFile() async {
+    // Ladedialog anzeigen
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('CSV-Datei wird importiert...'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    try {
+      final result = await CsvImportService.importVotersFromCsv();
+
+      if (mounted) {
+        // Ladedialog schließen
+        Navigator.pop(context);
+
+        // Ergebnis anzeigen
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Row(
+              children: [
+                Icon(
+                  result.success ? Icons.check_circle : Icons.error,
+                  color: result.success ? Colors.green : Colors.red,
+                ),
+                const SizedBox(width: 8),
+                Text(result.success
+                    ? 'Import abgeschlossen'
+                    : 'Import fehlgeschlagen'),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Text(result.message),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+
+        // Wählerliste neu laden
+        if (result.success) {
+          context.read<VoterProvider>().loadVoters();
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // Ladedialog schließen
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fehler: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Wählerverzeichnis'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.file_upload),
+            tooltip: 'CSV importieren',
+            onPressed: _importCsvFile,
+          ),
+          PopupMenuButton(
+            icon: const Icon(Icons.more_vert),
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'import_info',
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline),
+                    SizedBox(width: 8),
+                    Text('CSV-Format Info'),
+                  ],
+                ),
+              ),
+            ],
+            onSelected: (value) {
+              if (value == 'import_info') {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('CSV-Datei Format'),
+                    content: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            'Die CSV-Datei sollte folgendes Format haben:\n',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const Text('PK-Nummer,Nachname,Vorname\n'),
+                          const Text('Beispiel:'),
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[200],
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              CsvImportService.generateSampleCsv(),
+                              style: const TextStyle(
+                                fontFamily: 'monospace',
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Hinweise:',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const Text('• Die erste Zeile (Header) ist optional'),
+                          const Text('• Kommas als Trennzeichen verwenden'),
+                          const Text('• UTF-8 Kodierung empfohlen'),
+                          const Text('• Duplikate werden übersprungen'),
+                        ],
+                      ),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Schließen'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -224,9 +375,8 @@ class _VoterListScreenState extends State<VoterListScreen> {
                       ),
                       child: ListTile(
                         leading: CircleAvatar(
-                          backgroundColor: voter.hasVoted
-                              ? Colors.green
-                              : Colors.grey[300],
+                          backgroundColor:
+                              voter.hasVoted ? Colors.green : Colors.grey[300],
                           child: Icon(
                             voter.hasVoted ? Icons.check : Icons.person,
                             color: voter.hasVoted ? Colors.white : Colors.grey,
